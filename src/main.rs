@@ -19,30 +19,30 @@ pub struct Metadata {
     pub certificate_profile: String,
 }
 
-/// Simple CLi tool to sign files with Trusted Signing
+/// Simple CLI tool to sign files with Trusted Signing
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
+
 struct Args {
-    /// File to sign
-    #[arg(short, long)]
-    file: String,
+    /// File(s) to sign
+    #[arg(required = true, value_name = "FILE(S)", num_args = 1..=99)]
+    file: Vec<String>,
 
     /// Azure client secret
-    #[arg(long, short = 'p', env = "AZURE_CLIENT_SECRET")]
+    #[arg(long, env = "AZURE_CLIENT_SECRET")]
     azure_client_secret: String,
 
     /// Azure client secret
-    #[arg(long, short = 'u', env = "AZURE_CLIENT_ID")]
+    #[arg(long, env = "AZURE_CLIENT_ID")]
     azure_client_id: String,
 
     /// Azure tenant id
-    #[arg(long, short = 't', env = "AZURE_TENANT_ID")]
+    #[arg(long, env = "AZURE_TENANT_ID")]
     azure_tenant_id: String,
 
     /// Azure CLI path
     #[arg(
         long,
-        short = 'a',
         env = "AZURE_CLI_PATH",
         default_value = r"C:\Program Files\Microsoft SDKs\Azure\CLI2\wbin\az.cmd"
     )]
@@ -51,7 +51,6 @@ struct Args {
     /// Signtool path
     #[arg(
         long,
-        short = 's',
         env = "SIGNTOOL_PATH",
         default_value = r"C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe"
     )]
@@ -59,15 +58,15 @@ struct Args {
 
     /// Signing Endpoint
     /// Example: https://eus.codesigning.azure.net
-    #[arg(long, short = 'e')]
+    #[arg(long, short = 'e', verbatim_doc_comment)]
     endpoint: String,
 
     /// Code Signing Account name
-    #[arg(long, short = 'c')]
+    #[arg(long, short = 'a')]
     account: String,
 
-    // Certificate Profile name
-    #[arg(long, short = 'n')]
+    /// Certificate Profile name
+    #[arg(long, short = 'c')]
     certificate: String,
 }
 
@@ -138,22 +137,25 @@ async fn main() {
     .run()
     .unwrap();
 
-    cmd!(
-        args.sing_tool_path,
-        "sign",
-        "/v",
-        "/fd",
-        "SHA256",
-        "/tr",
-        "http://timestamp.acs.microsoft.com",
-        "/td",
-        "SHA256",
-        "/dlib",
-        lib_path,
-        "/dmdf",
-        metadata_path,
-        args.file
-    )
-    .run()
-    .unwrap();
+    // iterate over files
+    for file in args.file {
+        cmd!(
+            &args.sing_tool_path,
+            "sign",
+            "/v",
+            "/fd",
+            "SHA256",
+            "/tr",
+            "http://timestamp.acs.microsoft.com",
+            "/td",
+            "SHA256",
+            "/dlib",
+            &lib_path,
+            "/dmdf",
+            &metadata_path,
+            file
+        )
+        .run()
+        .unwrap();
+    }
 }
