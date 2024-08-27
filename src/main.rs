@@ -157,3 +157,29 @@ async fn main() {
         .unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build() {
+        // build the app
+        cmd!("cargo", "build",).run().unwrap();
+        cmd!("cargo", "build", "--release").run().unwrap();
+
+        // attempt to sign a file
+        cmd!(
+            "target/debug/trusted-signing-cli.exe",
+            "target/release/trusted-signing-cli.exe",
+            "-e",
+            "https://wus2.codesigning.azure.net",
+            "-a",
+            "mnr",
+            "-c",
+            "Profile3",
+        )
+        .run()
+        .unwrap();
+    }
+}
