@@ -4,27 +4,28 @@ A simple CLI tool to sign files with Trusted Signing
 
 ## Prerequisites
 
--   [Trusted Signing Account](https://learn.microsoft.com/en-us/azure/security/trusted-signing/trusted-signing-overview) and permissions configured
+-   [Trusted Signing Account](https://learn.microsoft.com/en-us/azure/trusted-signing/quickstart?tabs=registerrp-portal,account-portal,certificateprofile-portal,deleteresources-portal) and permissions configured
+-   [.NET](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (.NET 6 or later recommended)
 -   [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli#install-or-update)
 -   [Signtool](https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe) (Windows 11 SDK 10.0.22000.0 or later recommended)
 -   [Rust](https://www.rust-lang.org/) (Optional if you want to build from source)
 
 ## Installation
 
-`cargo install trusted-signing-cli`
+`cargo install trusted-signing-cli` or download the binary from the [latest releases](https://github.com/levminer/trusted-signing-cli/releases)
 
 ## Usage
 
-The CLI expects the following environment variables to be set or you can pass them as arguments (you can use [this](https://dev.to/pwd9000/bk-1iij) article to get the credentials):
+The CLI expects the following environment variables to be set or you can pass them as arguments. You need to create an Azure App Registration (you can use [this](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) article to get the credentials):
 
 -   `AZURE_CLIENT_ID`
 -   `AZURE_CLIENT_SECRET`
 -   `AZURE_TENANT_ID`
 
 Signing a single file:
-    `trusted-signing-cli -e <url> -a <account name> -c <certificate profile name> file1.exe`
+`trusted-signing-cli -e <url> -a <account name> -c <certificate profile name> file1.exe`
 
 Signing multiple files:
-    `trusted-signing-cli -e <url> -a <account name> -c <certificate profile name> file1.exe file2.exe file3.exe`
+`trusted-signing-cli -e <url> -a <account name> -c <certificate profile name> file1.exe file2.exe file3.exe`
 
 For more information run `trusted-signing-cli --help`
