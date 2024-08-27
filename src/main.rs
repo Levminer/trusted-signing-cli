@@ -93,13 +93,13 @@ async fn main() {
 
     // Download and extract lib
     if !lib_path.exists() {
-        let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.52";
+        let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.60";
         let downloads = vec![Download::try_from(link).unwrap()];
         let downloader = DownloaderBuilder::new()
             .directory(config_dir.clone())
             .build();
         downloader.download(&downloads).await;
-        let archive = config_dir.join("1.0.52");
+        let archive = config_dir.join("1.0.60");
         let target_dir = config_dir.join("lib");
 
         zip_extract(&archive, &target_dir).unwrap();
@@ -108,19 +108,17 @@ async fn main() {
     // Check if metadata exists
     let metadata_path = config_dir.join("metadata.json");
 
-    if !metadata_path.exists() {
-        let data = Metadata {
-            certificate_profile: args.certificate,
-            code_signing_account_name: args.account,
-            endpoint: args.endpoint,
-        };
+    let data = Metadata {
+        certificate_profile: args.certificate,
+        code_signing_account_name: args.account,
+        endpoint: args.endpoint,
+    };
 
-        fs::write(
-            config_dir.join("metadata.json"),
-            serde_json::to_string(&data).unwrap(),
-        )
-        .unwrap();
-    }
+    fs::write(
+        config_dir.join("metadata.json"),
+        serde_json::to_string(&data).unwrap(),
+    )
+    .unwrap();
 
     // Login to azure cli
     cmd!(
