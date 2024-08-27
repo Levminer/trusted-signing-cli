@@ -1,6 +1,6 @@
 [package]
 name = "trusted-signing-cli"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 description = "A simple CLI tool to sign files with Trusted Signing"
 license = "MIT"
