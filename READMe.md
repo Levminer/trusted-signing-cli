@@ -16,7 +16,7 @@ A simple CLI tool to sign files with Trusted Signing
 
 ## Usage
 
-The CLI expects the following environment variables to be set or you can pass them as arguments. You need to create an Azure App Registration (you can use [this](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) article to get the credentials):
+The CLI expects the following environment variables to be set or you can pass them as arguments. You need to create an Azure App Registration (you can use [this](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory) article to get the credentials):
 
 -   `AZURE_CLIENT_ID`
 -   `AZURE_CLIENT_SECRET`
