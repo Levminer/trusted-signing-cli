@@ -3,7 +3,6 @@ use directories::BaseDirs;
 use duct::cmd;
 use serde::{Deserialize, Serialize};
 use std::{fs, vec};
-use std::ffi::OsString;
 use trauma::{download::Download, downloader::DownloaderBuilder};
 use zip_extensions::zip_extract;
 
