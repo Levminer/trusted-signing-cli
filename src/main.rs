@@ -76,7 +76,8 @@ async fn main() {
     match run(args).await {
         Ok(_) => (),
         Err(err) => {
-            eprintln!("The application signing was not successful.\n\r{}", err)
+            eprintln!("The application signing was not successful.\n\r{}", err);
+            std::process::exit(1);
         }
     }
 }
