@@ -2,7 +2,7 @@ use clap::Parser;
 use directories::BaseDirs;
 use duct::cmd;
 use serde::{Deserialize, Serialize};
-use std::fs;
+use std::{fs, vec};
 use trauma::{download::Download, downloader::DownloaderBuilder};
 use zip_extensions::zip_extract;
 
@@ -22,7 +22,6 @@ pub struct Metadata {
 /// Simple CLI tool to sign files with Trusted Signing
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
-
 struct Args {
     /// File(s) to sign
     #[arg(required = true, value_name = "FILE(S)", num_args = 1..=99)]
@@ -73,6 +72,23 @@ struct Args {
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
+    match run(args).await {
+        Ok(_) => (),
+        Err(err) => {
+            eprintln!("The application signing was not successful.\n\r{}", err);
+            std::process::exit(1);
+        }
+    }
+}
+
+async fn run(args: Args) -> Result<(), String> {
+    if fs::metadata(&args.azure_cli_path).is_err() {
+        Err(format!("azure cli {} does not exists, please specify PATH with env AZURE_CLI_PATH", &args.azure_cli_path))?;
+    }
+
+    if fs::metadata(&args.sing_tool_path).is_err() {
+        Err(format!("signtool {} does not exists, please specify PATH with env SIGNTOOL_PATH", &args.sing_tool_path))?;
+    }
 
     // Get home directory
     let base = BaseDirs::new().unwrap();
@@ -81,7 +97,8 @@ async fn main() {
     // Create config directory
     let config_dir = home.join(".trusted-signing-cli");
     if !config_dir.exists() {
-        std::fs::create_dir_all(&config_dir).unwrap();
+        fs::create_dir_all(&config_dir)
+            .map_err(|err| format!("config dir '{:?}' could not be created: {:?}", &config_dir, err))?;
     }
 
     // Check if lib is downloaded
@@ -94,7 +111,10 @@ async fn main() {
     // Download and extract lib
     if !lib_path.exists() {
         let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.60";
-        let downloads = vec![Download::try_from(link).unwrap()];
+        let downloads =
+            vec![Download::try_from(link).map_err(|err| {
+                format!("could not download signing client from {}: {:?}", link, err)
+            })?];
         let downloader = DownloaderBuilder::new()
             .directory(config_dir.clone())
             .build();
@@ -102,7 +122,8 @@ async fn main() {
         let archive = config_dir.join("1.0.60");
         let target_dir = config_dir.join("lib");
 
-        zip_extract(&archive, &target_dir).unwrap();
+        zip_extract(&archive, &target_dir)
+            .map_err(|err| format!("signing client can't be unzipped: {:?}", err))?;
     }
 
     // Check if metadata exists
@@ -116,13 +137,14 @@ async fn main() {
 
     fs::write(
         config_dir.join("metadata.json"),
-        serde_json::to_string(&data).unwrap(),
+        serde_json::to_string(&data)
+            .map_err(|err| format!("metadata.json could not be parsed: {:?}", err))?,
     )
-    .unwrap();
+        .map_err(|err| format!("metadata.json could not be written: {:?}", err))?;
 
     // Login to azure cli
     cmd!(
-        args.azure_cli_path,
+        &args.azure_cli_path,
         "login",
         "--service-principal",
         "-t",
@@ -132,8 +154,8 @@ async fn main() {
         "-p",
         args.azure_client_secret
     )
-    .run()
-    .unwrap();
+        .run()
+        .map_err(|err| format!("login via azure cli '{}' failed: {:?}", &args.azure_cli_path, err))?;
 
     // iterate over files
     for file in args.file {
@@ -151,11 +173,13 @@ async fn main() {
             &lib_path,
             "/dmdf",
             &metadata_path,
-            file
+            &file
         )
-        .run()
-        .unwrap();
+            .run()
+            .map_err(|err| format!("signtool '{}' could not sign the file '{:?}', error: {:?}", &args.sing_tool_path, &file, &err))?;
     }
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -179,7 +203,7 @@ mod tests {
             "-c",
             "Profile3",
         )
-        .run()
-        .unwrap();
+            .run()
+            .unwrap();
     }
 }
