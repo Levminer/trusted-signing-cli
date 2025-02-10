@@ -2,7 +2,7 @@ use clap::Parser;
 use directories::BaseDirs;
 use duct::cmd;
 use serde::{Deserialize, Serialize};
-use std::{fs, vec};
+use std::{ffi::OsString, fs, iter, vec};
 use trauma::{download::Download, downloader::DownloaderBuilder};
 use zip_extensions::zip_extract;
 
@@ -67,6 +67,24 @@ struct Args {
     /// Certificate Profile name
     #[arg(long, short = 'c')]
     certificate: String,
+
+    /// File digest algorithm
+    #[arg(long, default_value = "SHA256")]
+    fd: String,
+
+    /// RFC 3161 timestamp server URL
+    #[arg(long, default_value = "http://timestamp.acs.microsoft.com")]
+    tr: String,
+
+    /// Timestamp server digest algorithm
+    #[arg(long, default_value = "SHA256")]
+    td: String,
+
+    /// Description of the signed content
+    /// This description will appear as the .msi installer name in the UAC installation prompt and
+    /// will be a random string if unset.
+    #[arg(long, short = 'd')]
+    description: Option<String>,
 }
 
 #[tokio::main]
@@ -158,22 +176,30 @@ async fn run(args: Args) -> Result<(), String> {
         .map_err(|err| format!("login via azure cli '{}' failed: {:?}", &args.azure_cli_path, err))?;
 
     // iterate over files
+    let mut cmd_args: Vec<OsString> = vec![
+        "sign".into(),
+        "/v".into(),
+        "/fd".into(),
+        args.fd.into(),
+        "/tr".into(),
+        args.tr.into(),
+        "/td".into(),
+        args.td.into(),
+        "/dlib".into(),
+        lib_path.into(),
+        "/dmdf".into(),
+        metadata_path.into(),
+    ];
+
+    if let Some(description) = args.description {
+        cmd_args.push("/d".into());
+        cmd_args.push(description.into());
+    }
+
     for file in args.file {
-        cmd!(
+        cmd(
             &args.sing_tool_path,
-            "sign",
-            "/v",
-            "/fd",
-            "SHA256",
-            "/tr",
-            "http://timestamp.acs.microsoft.com",
-            "/td",
-            "SHA256",
-            "/dlib",
-            &lib_path,
-            "/dmdf",
-            &metadata_path,
-            &file
+            cmd_args.iter().chain(iter::once(&file.clone().into())),
         )
             .run()
             .map_err(|err| format!("signtool '{}' could not sign the file '{:?}', error: {:?}", &args.sing_tool_path, &file, &err))?;
