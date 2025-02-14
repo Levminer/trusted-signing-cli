@@ -80,9 +80,9 @@ struct Args {
     #[arg(long, default_value = "SHA256")]
     td: String,
 
-    /// Description of the signed content
-    /// This description will appear as the .msi installer name in the UAC installation prompt and
-    /// will be a random string if unset.
+    /// Description of the signed content.
+    /// When signing a .msi installer, this description will appear as the installer's name in the
+    /// UAC prompt or will be a random string of characters if unset.
     #[arg(long, short = 'd')]
     description: Option<String>,
 }
