@@ -109,7 +109,7 @@ async fn run(args: Args) -> Result<(), String> {
     }
 
     // Get home directory
-    let base = BaseDirs::new().unwrap();
+    let base = BaseDirs::new().expect("could not find home directory");
     let home = base.home_dir();
 
     // Create config directory
@@ -128,7 +128,7 @@ async fn run(args: Args) -> Result<(), String> {
 
     // Download and extract lib
     if !lib_path.exists() {
-        let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.60";
+        let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.86";
         let downloads =
             vec![Download::try_from(link).map_err(|err| {
                 format!("could not download signing client from {}: {:?}", link, err)
@@ -137,7 +137,7 @@ async fn run(args: Args) -> Result<(), String> {
             .directory(config_dir.clone())
             .build();
         downloader.download(&downloads).await;
-        let archive = config_dir.join("1.0.60");
+        let archive = config_dir.join("1.0.86");
         let target_dir = config_dir.join("lib");
 
         zip_extract(&archive, &target_dir)
