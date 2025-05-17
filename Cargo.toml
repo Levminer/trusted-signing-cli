@@ -1,6 +1,6 @@
 [package]
 name = "trusted-signing-cli"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2021"
 description = "A simple CLI tool to sign files with Trusted Signing"
 license = "MIT"
@@ -14,7 +14,7 @@ directories = "6.0.0"
 duct = "1.0.0"
 tokio = "1.37.0"
 trauma = "2.2.4"
-zip = "2.6.1"
-zip-extensions = "0.8.2"
+zip = "3.0.0"
+zip-extensions = "0.8.3"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
