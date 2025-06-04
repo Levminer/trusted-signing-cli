@@ -2,7 +2,7 @@ use clap::Parser;
 use directories::BaseDirs;
 use duct::cmd;
 use serde::{Deserialize, Serialize};
-use std::{ffi::OsString, fs, iter, vec};
+use std::{ffi::OsString, fs, iter, path::Path, vec};
 use trauma::{download::Download, downloader::DownloaderBuilder};
 use zip_extensions::zip_extract;
 
@@ -85,6 +85,13 @@ struct Args {
     /// UAC prompt or will be a random string of characters if unset.
     #[arg(long, short = 'd')]
     description: Option<String>,
+
+    /// Ignore unsupported files
+    /// If set to true, the tool will ignore files that are not supported by the signing process.
+    /// This is useful when signing a large number of files and you want to ignore files that are
+    /// not supported.
+    #[arg(long, short = 'i', default_value = "false")]
+    ignore_unsupported: bool,
 }
 
 #[tokio::main]
@@ -101,11 +108,17 @@ async fn main() {
 
 async fn run(args: Args) -> Result<(), String> {
     if fs::metadata(&args.azure_cli_path).is_err() {
-        Err(format!("azure cli {} does not exists, please specify PATH with env AZURE_CLI_PATH", &args.azure_cli_path))?;
+        Err(format!(
+            "azure cli {} does not exists, please specify PATH with env AZURE_CLI_PATH",
+            &args.azure_cli_path
+        ))?;
     }
 
     if fs::metadata(&args.sing_tool_path).is_err() {
-        Err(format!("signtool {} does not exists, please specify PATH with env SIGNTOOL_PATH", &args.sing_tool_path))?;
+        Err(format!(
+            "signtool {} does not exists, please specify PATH with env SIGNTOOL_PATH",
+            &args.sing_tool_path
+        ))?;
     }
 
     // Get home directory
@@ -115,8 +128,12 @@ async fn run(args: Args) -> Result<(), String> {
     // Create config directory
     let config_dir = home.join(".trusted-signing-cli");
     if !config_dir.exists() {
-        fs::create_dir_all(&config_dir)
-            .map_err(|err| format!("config dir '{:?}' could not be created: {:?}", &config_dir, err))?;
+        fs::create_dir_all(&config_dir).map_err(|err| {
+            format!(
+                "config dir '{:?}' could not be created: {:?}",
+                &config_dir, err
+            )
+        })?;
     }
 
     // Check if lib is downloaded
@@ -129,10 +146,9 @@ async fn run(args: Args) -> Result<(), String> {
     // Download and extract lib
     if !lib_path.exists() {
         let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.86";
-        let downloads =
-            vec![Download::try_from(link).map_err(|err| {
-                format!("could not download signing client from {}: {:?}", link, err)
-            })?];
+        let downloads = vec![Download::try_from(link).map_err(|err| {
+            format!("could not download signing client from {}: {:?}", link, err)
+        })?];
         let downloader = DownloaderBuilder::new()
             .directory(config_dir.clone())
             .build();
@@ -158,7 +174,7 @@ async fn run(args: Args) -> Result<(), String> {
         serde_json::to_string(&data)
             .map_err(|err| format!("metadata.json could not be parsed: {:?}", err))?,
     )
-        .map_err(|err| format!("metadata.json could not be written: {:?}", err))?;
+    .map_err(|err| format!("metadata.json could not be written: {:?}", err))?;
 
     // Login to azure cli
     cmd!(
@@ -172,8 +188,13 @@ async fn run(args: Args) -> Result<(), String> {
         "-p",
         args.azure_client_secret
     )
-        .run()
-        .map_err(|err| format!("login via azure cli '{}' failed: {:?}", &args.azure_cli_path, err))?;
+    .run()
+    .map_err(|err| {
+        format!(
+            "login via azure cli '{}' failed: {:?}",
+            &args.azure_cli_path, err
+        )
+    })?;
 
     // iterate over files
     let mut cmd_args: Vec<OsString> = vec![
@@ -197,15 +218,51 @@ async fn run(args: Args) -> Result<(), String> {
     }
 
     for file in args.file {
+        if args.ignore_unsupported {
+            if !is_supported(&file) {
+                continue;
+            }
+        }
+
         cmd(
             &args.sing_tool_path,
             cmd_args.iter().chain(iter::once(&file.clone().into())),
         )
-            .run()
-            .map_err(|err| format!("signtool '{}' could not sign the file '{:?}', error: {:?}", &args.sing_tool_path, &file, &err))?;
+        .run()
+        .map_err(|err| {
+            format!(
+                "signtool '{}' could not sign the file '{:?}', error: {:?}",
+                &args.sing_tool_path, &file, &err
+            )
+        })?;
     }
 
     Ok(())
+}
+
+fn is_supported(file: &str) -> bool {
+    let supported_extensions = vec![
+        "appx",
+        "msix",
+        "appxbundle",
+        "msixbundle", // Packaged Windows Apps
+        "cab",        // Self-contained files used for application installation and setup
+        "cat",        // Files that contain digital thumbprints
+        "dll",        // Files that contain executable functions
+        "exe",        // Files that contain executable programs
+        "js",
+        "vbs",
+        "wsf", // Windows shell files
+        "msi",
+        "msp",
+        "mst", // Windows installer files
+        "ocx", // Files that contain Microsoft ActiveX controls
+        "ps1", // Files that contain PowerShell scripts
+        "stl", // Files that contain a certificate trust list
+        "sys", // System files
+    ];
+    let extension = Path::new(file).extension().unwrap_or_default();
+    supported_extensions.contains(&extension.to_str().unwrap_or_default())
 }
 
 #[cfg(test)]
@@ -229,7 +286,7 @@ mod tests {
             "-c",
             "Profile3",
         )
-            .run()
-            .unwrap();
+        .run()
+        .unwrap();
     }
 }
