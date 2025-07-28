@@ -53,7 +53,7 @@ struct Args {
         env = "SIGNTOOL_PATH",
         default_value = r"C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe"
     )]
-    sing_tool_path: String,
+    sign_tool_path: String,
 
     /// Signing Endpoint
     /// Example: https://eus.codesigning.azure.net
@@ -114,10 +114,10 @@ async fn run(args: Args) -> Result<(), String> {
         ))?;
     }
 
-    if fs::metadata(&args.sing_tool_path).is_err() {
+    if fs::metadata(&args.sign_tool_path).is_err() {
         Err(format!(
             "signtool {} does not exists, please specify PATH with env SIGNTOOL_PATH",
-            &args.sing_tool_path
+            &args.sign_tool_path
         ))?;
     }
 
@@ -225,14 +225,14 @@ async fn run(args: Args) -> Result<(), String> {
         }
 
         cmd(
-            &args.sing_tool_path,
+            &args.sign_tool_path,
             cmd_args.iter().chain(iter::once(&file.clone().into())),
         )
         .run()
         .map_err(|err| {
             format!(
                 "signtool '{}' could not sign the file '{:?}', error: {:?}",
-                &args.sing_tool_path, &file, &err
+                &args.sign_tool_path, &file, &err
             )
         })?;
     }
