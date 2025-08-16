@@ -7,7 +7,7 @@ A simple CLI tool to sign files with Trusted Signing
 -   [Trusted Signing Account](https://learn.microsoft.com/en-us/azure/trusted-signing/quickstart?tabs=registerrp-portal,account-portal,certificateprofile-portal,deleteresources-portal) and permissions configured
 -   [.NET](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) (.NET 6 or later recommended)
 -   [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-windows?tabs=azure-cli#install-or-update)
--   [Signtool](https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe) (Windows 11 SDK 10.0.22000.0 or later recommended)
+-   [Signtool](https://learn.microsoft.com/en-us/dotnet/framework/tools/signtool-exe) (Windows 11 SDK 10.0.26100.0 or later recommended)
 -   [Rust](https://www.rust-lang.org/) (Optional if you want to build from source)
 
 ## Installation
