@@ -60,12 +60,20 @@ struct Args {
     #[arg(long, short = 'e', verbatim_doc_comment)]
     endpoint: String,
 
-    /// Code Signing Account name
-    #[arg(long, short = 'a')]
+    /// Trusted Signing Account name
+    #[arg(
+        long,
+        env = "AZURE_TRUSTED_SIGNING_ACCOUNT_NAME",
+        short = 'a'
+    )]
     account: String,
 
     /// Certificate Profile name
-    #[arg(long, short = 'c')]
+    #[arg(
+        long,
+        env = "AZURE_CERTIFICATE_PROFILE_NAME",
+        short = 'c'
+    )]
     certificate: String,
 
     /// File digest algorithm
@@ -107,6 +115,7 @@ async fn main() {
 }
 
 async fn run(args: Args) -> Result<(), String> {
+    dbg!(&args);
     if fs::metadata(&args.azure_cli_path).is_err() {
         Err(format!(
             "azure cli {} does not exists, please specify PATH with env AZURE_CLI_PATH",
