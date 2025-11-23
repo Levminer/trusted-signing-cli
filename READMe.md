@@ -19,7 +19,7 @@ A simple CLI tool to sign files with Trusted Signing
 The CLI expects the following environment variables to be set or you can pass them as arguments. You need to create an Azure App Registration (you can use [this](https://learn.microsoft.com/en-us/power-apps/developer/data-platform/walkthrough-register-app-azure-active-directory) article to get the credentials):
 
 -   `AZURE_CLIENT_ID` (or use `--azure-client-id`)
--   `AZURE_CLIENT_SECRET` (or use `--azure-tenant-id`)
+-   `AZURE_CLIENT_SECRET` (or use `--azure-client-secret`)
 -   `AZURE_TENANT_ID` (or use `--azure-tenant-id`)
 -   `AZURE_TRUSTED_SIGNING_ACCOUNT_NAME` (or use `--account/-a`)
 -   `AZURE_CERTIFICATE_PROFILE_NAME` (or use `--certificate/-c`)
