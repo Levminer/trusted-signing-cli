@@ -115,7 +115,6 @@ async fn main() {
 }
 
 async fn run(args: Args) -> Result<(), String> {
-    dbg!(&args);
     if fs::metadata(&args.azure_cli_path).is_err() {
         Err(format!(
             "azure cli {} does not exists, please specify PATH with env AZURE_CLI_PATH",
