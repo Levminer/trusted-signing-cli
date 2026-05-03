@@ -5,7 +5,13 @@ edition = "2021"
 description = "A simple CLI tool to sign files with Trusted Signing"
 license = "MIT"
 repository = "https://github.com/levminer/trusted-signing-cli"
-keywords = ["azure", "codesigning", "signtool", "trusted-signing"]
+keywords = [
+    "azure",
+    "codesigning",
+    "signtool",
+    "trusted-signing",
+    "artifactsigning",
+]
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive", "env"] }
