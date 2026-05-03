@@ -153,15 +153,20 @@ async fn run(args: Args) -> Result<(), String> {
 
     // Download and extract lib
     if !lib_path.exists() {
-        let link = "https://www.nuget.org/api/v2/package/Microsoft.Trusted.Signing.Client/1.0.95";
-        let downloads = vec![Download::try_from(link).map_err(|err| {
+        let pkg_version = "1.0.128";
+
+        let link = format!(
+            "https://www.nuget.org/api/v2/package/Microsoft.ArtifactSigning.Client/{}",
+            pkg_version
+        );
+        let downloads = vec![Download::try_from(link.as_str()).map_err(|err| {
             format!("could not download signing client from {}: {:?}", link, err)
         })?];
         let downloader = DownloaderBuilder::new()
             .directory(config_dir.clone())
             .build();
         downloader.download(&downloads).await;
-        let archive = config_dir.join("1.0.95");
+        let archive = config_dir.join(pkg_version);
         let target_dir = config_dir.join("lib");
 
         zip_extract(&archive, &target_dir)
