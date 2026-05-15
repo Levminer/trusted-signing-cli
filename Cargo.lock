@@ -85,6 +85,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "artifact-signing-cli"
+version = "0.11.0"
+dependencies = [
+ "clap",
+ "dialoguer",
+ "directories",
+ "duct",
+ "serde",
+ "serde_json",
+ "tokio",
+ "trauma",
+ "zip",
+ "zip-extensions",
+]
+
+[[package]]
 name = "async-trait"
 version = "0.1.89"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2408,22 +2424,6 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
-]
-
-[[package]]
-name = "trusted-signing-cli"
-version = "0.10.0"
-dependencies = [
- "clap",
- "dialoguer",
- "directories",
- "duct",
- "serde",
- "serde_json",
- "tokio",
- "trauma",
- "zip",
- "zip-extensions",
 ]
 
 [[package]]

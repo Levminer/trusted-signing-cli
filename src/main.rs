@@ -19,7 +19,7 @@ pub struct Metadata {
     pub certificate_profile: String,
 }
 
-/// Simple CLI tool to sign files with Trusted Signing
+/// Simple CLI tool to sign files with Artifact Signing
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
@@ -60,18 +60,18 @@ struct Args {
     #[arg(long, short = 'e', verbatim_doc_comment)]
     endpoint: String,
 
-    /// Trusted Signing Account name
+    /// Artifact Signing Account
     #[arg(
         long,
-        env = "AZURE_TRUSTED_SIGNING_ACCOUNT_NAME",
+        env = "AZURE_ARTIFACT_SIGNING_ACCOUNT",
         short = 'a'
     )]
     account: String,
 
-    /// Certificate Profile name
+    /// Artifact Signing Certificate Profile
     #[arg(
         long,
-        env = "AZURE_CERTIFICATE_PROFILE_NAME",
+        env = "AZURE_ARTIFACT_SIGNING_CERTIFICATE_PROFILE",
         short = 'c'
     )]
     certificate: String,
@@ -134,7 +134,7 @@ async fn run(args: Args) -> Result<(), String> {
     let home = base.home_dir();
 
     // Create config directory
-    let config_dir = home.join(".trusted-signing-cli");
+    let config_dir = home.join(".artifact-signing-cli");
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir).map_err(|err| {
             format!(
@@ -290,8 +290,8 @@ mod tests {
 
         // attempt to sign a file
         cmd!(
-            "target/debug/trusted-signing-cli.exe",
-            "target/release/trusted-signing-cli.exe",
+            "target/debug/artifact-signing-cli.exe",
+            "target/release/artifact-signing-cli.exe",
             "-e",
             "https://wus2.codesigning.azure.net",
             "-a",
