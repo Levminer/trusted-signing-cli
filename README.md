@@ -1,6 +1,6 @@
 # Artifact Signing CLI
 
-A simple CLI tool to sign files with Artifact Signing
+A simple CLI tool to sign files with Azure Artifact Signing
 
 ## Prerequisites
 

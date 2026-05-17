@@ -1,5 +1,6 @@
 [package]
 name = "artifact-signing-cli"
+version = "0.11.0"
 edition = "2021"
 description = "A simple CLI tool to sign files with Artifact Signing"
 license = "MIT"
